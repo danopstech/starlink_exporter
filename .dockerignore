@@ -1,0 +1,5 @@
+proto/
+dist/
+make.sh
+README.md
+.gitignore

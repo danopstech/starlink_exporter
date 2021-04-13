@@ -1,0 +1,36 @@
+project_name: starlink_exporter
+
+before:
+  hooks:
+    - go mod tidy
+    - go test ./...
+builds:
+  - main: ./cmd/starlink_exporter/main.go
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - windows
+      - darwin
+archives:
+  -
+    name_template: "{{ .ProjectName }}_v{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    replacements:
+      darwin: Darwin
+      linux: Linux
+      windows: Windows
+      386: i386
+      amd64: x86_64
+    format_overrides:
+      - goos: windows
+        format: zip
+    files:
+      - none*
+dockers:
+  - image_templates:
+      - ghcr.io/danopstech/{{.ProjectName}}:latest
+      - ghcr.io/danopstech/{{.ProjectName}}:{{ .Tag }}
+      - danopstech/{{.ProjectName}}:latest
+      - danopstech/{{.ProjectName}}:{{ .Tag }}
+checksum:
+  name_template: 'checksums.txt'
