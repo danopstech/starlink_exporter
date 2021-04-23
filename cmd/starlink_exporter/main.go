@@ -26,7 +26,8 @@ func main() {
 	}
 	defer exporter.Conn.Close()
 
-	prometheus.MustRegister(exporter)
+	r := prometheus.NewRegistry()
+	r.MustRegister(exporter)
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		_, _ = w.Write([]byte(`<html>
@@ -54,6 +55,6 @@ func main() {
 		_, _ = fmt.Fprintf(w, "%s\n", exporter.Conn.GetState())
 	})
 
-	http.Handle(metricsPath, promhttp.Handler())
+	http.Handle(metricsPath, promhttp.HandlerFor(r, promhttp.HandlerOpts{}))
 	log.Fatal(http.ListenAndServe(":"+*port, nil))
 }
