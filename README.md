@@ -21,8 +21,11 @@ A [Starlink](https://www.starlink.com/) exporter for Prometheus. Not affiliated 
 ```bash
 $ ./starlink_exporter --help
 Usage of starlink_exporter
+  -address string
+        IP address and port to reach dish (default "192.168.100.1:9200")
   -port string
-        Listening port for prometheus endpoint (default "9817")
+        listening port to expose metrics on (default "9817")
+
 ```
 
 ### Binaries

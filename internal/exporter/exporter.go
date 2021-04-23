@@ -14,8 +14,10 @@ import (
 )
 
 const (
-	dishAddress = "192.168.100.1:9200"
-	namespace   = "starlink"
+	// Address to reach Starlink dish ip:port
+	DishAddress = "192.168.100.1:9200"
+
+	namespace = "starlink"
 )
 
 var (
@@ -144,10 +146,10 @@ type Exporter struct {
 }
 
 // New returns an initialized Exporter.
-func New() (*Exporter, error) {
+func New(address string) (*Exporter, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
 	defer cancel()
-	conn, err := grpc.DialContext(ctx, dishAddress, grpc.WithInsecure(), grpc.WithBlock())
+	conn, err := grpc.DialContext(ctx, address, grpc.WithInsecure(), grpc.WithBlock())
 	if err != nil {
 		return nil, fmt.Errorf("error creating underlying gRPC connection to starlink dish: %s", err.Error())
 	}
