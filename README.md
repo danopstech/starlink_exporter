@@ -79,8 +79,8 @@ scrape_configs
 # TYPE starlink_dish_alert_unexpected_location gauge
 # HELP starlink_dish_currently_obstructed Status of view of the sky
 # TYPE starlink_dish_currently_obstructed gauge
-# HELP starlink_dish_dishDeviceInfo Running software versions and IDs of hardware
-# TYPE starlink_dish_dishDeviceInfo gauge
+# HELP starlink_dish_info Running software versions and IDs of hardware
+# TYPE starlink_dish_info gauge
 # HELP starlink_dish_state The Current dishState of the Dish (Unknown, Booting, Searching, Connected).
 # TYPE starlink_dish_state gauge
 # HELP starlink_dish_downlink_throughput_bytes Amount of bandwidth in bytes per second download

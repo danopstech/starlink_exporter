@@ -31,8 +31,8 @@ var (
 		"Time to scrape metrics from starlink dish",
 		nil, nil,
 	)
-	dishDeviceInfo = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, "dish", "dishDeviceInfo"),
+	dishInfo = prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "dish", "info"),
 		"Running software versions and IDs of hardware",
 		[]string{"device_id", "hardware_version", "software_version", "country_code", "utc_offset"}, nil,
 	)
@@ -165,7 +165,7 @@ func New(address string) (*Exporter, error) {
 func (e *Exporter) Describe(ch chan<- *prometheus.Desc) {
 	ch <- dishUp
 	ch <- dishScrapeDurationSeconds
-	ch <- dishDeviceInfo
+	ch <- dishInfo
 	ch <- dishState
 	ch <- dishUptimeSeconds
 	ch <- dishPopPingDropRatio
@@ -228,7 +228,7 @@ func (e *Exporter) collectDish(ch chan<- prometheus.Metric) bool {
 	alerts := dishStatus.GetAlerts()
 
 	ch <- prometheus.MustNewConstMetric(
-		dishDeviceInfo, prometheus.GaugeValue, 1.00,
+		dishInfo, prometheus.GaugeValue, 1.00,
 		deviceInfo.GetId(),
 		deviceInfo.GetHardwareVersion(),
 		deviceInfo.GetSoftwareVersion(),
