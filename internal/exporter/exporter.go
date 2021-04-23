@@ -23,7 +23,7 @@ const (
 var (
 	dishUp = prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "dish", "up"),
-		"Was the last query of Starlink successful.",
+		"Was the last query of Starlink dish successful.",
 		nil, nil,
 	)
 	dishScrapeDurationSeconds = prometheus.NewDesc(
@@ -38,7 +38,7 @@ var (
 	)
 	dishState = prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "dish", "state"),
-		"The Current dishState of the Dish (Unknown, Booting, Searching, Connected).",
+		"The current dishState of the Dish (Unknown, Booting, Searching, Connected).",
 		nil, nil,
 	)
 	dishUptimeSeconds = prometheus.NewDesc(
