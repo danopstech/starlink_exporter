@@ -12,9 +12,16 @@ builds:
       - linux
       - windows
       - darwin
+    goarch:
+      - amd64
+      - 386
+      - arm
+      - arm64
+    goarm:
+      - 7
+
 archives:
-  -
-    name_template: "{{ .ProjectName }}_v{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+  - name_template: "{{ .ProjectName }}_v{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
     replacements:
       darwin: Darwin
       linux: Linux
@@ -26,11 +33,59 @@ archives:
         format: zip
     files:
       - none*
-dockers:
-  - image_templates:
-      - ghcr.io/danopstech/{{.ProjectName}}:latest
-      - ghcr.io/danopstech/{{.ProjectName}}:{{ .Tag }}
-      - danopstech/{{.ProjectName}}:latest
-      - danopstech/{{.ProjectName}}:{{ .Tag }}
+
 checksum:
   name_template: 'checksums.txt'
+
+dockers:
+  - image_templates:
+      - ghcr.io/danopstech/{{.ProjectName}}:v{{ .Version }}-amd64
+      - danopstech/{{.ProjectName}}:v{{ .Version }}-amd64
+    use_buildx: true
+    dockerfile: Dockerfile
+    build_flag_templates:
+      - "--platform=linux/amd64"
+
+  - image_templates:
+      - ghcr.io/danopstech/{{.ProjectName}}:v{{ .Version }}-arm7
+      - danopstech/{{.ProjectName}}:v{{ .Version }}-arm7
+    use_buildx: true
+    dockerfile: Dockerfile
+    goarch: arm
+    goarm: 7
+    build_flag_templates:
+      - "--platform=linux/arm/v7"
+
+  - image_templates:
+      - ghcr.io/danopstech/{{.ProjectName}}:v{{ .Version }}-arm64
+      - danopstech/{{.ProjectName}}:v{{ .Version }}-arm64
+    use_buildx: true
+    dockerfile: Dockerfile
+    goarch: arm64
+    build_flag_templates:
+      - "--platform=linux/arm64/v8"
+
+docker_manifests:
+  # github
+  - name_template: ghcr.io/danopstech/{{.ProjectName}}:v{{ .Version }}
+    image_templates:
+      - ghcr.io/danopstech/{{.ProjectName}}:v{{ .Version }}-amd64
+      - ghcr.io/danopstech/{{.ProjectName}}:v{{ .Version }}-arm64
+      - ghcr.io/danopstech/{{.ProjectName}}:v{{ .Version }}-arm7
+  - name_template: ghcr.io/danopstech/{{.ProjectName}}:latest
+    image_templates:
+      - ghcr.io/danopstech/{{.ProjectName}}:v{{ .Version }}-amd64
+      - ghcr.io/danopstech/{{.ProjectName}}:v{{ .Version }}-arm64
+      - ghcr.io/danopstech/{{.ProjectName}}:v{{ .Version }}-arm7
+
+  # dockerhub
+  - name_template: danopstech/{{.ProjectName}}:v{{ .Version }}
+    image_templates:
+      - danopstech/{{.ProjectName}}:v{{ .Version }}-amd64
+      - danopstech/{{.ProjectName}}:v{{ .Version }}-arm64
+      - danopstech/{{.ProjectName}}:v{{ .Version }}-arm7
+  - name_template: danopstech/{{.ProjectName}}:latest
+    image_templates:
+      - danopstech/{{.ProjectName}}:v{{ .Version }}-amd64
+      - danopstech/{{.ProjectName}}:v{{ .Version }}-arm64
+      - danopstech/{{.ProjectName}}:v{{ .Version }}-arm7
