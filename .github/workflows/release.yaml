@@ -5,6 +5,9 @@ on:
     tags:
       - v*
 
+env:
+  dockerpushrm_version: "1.7.0"
+
 jobs:
   goreleaser:
     runs-on: ubuntu-latest
@@ -60,6 +63,14 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: push README to Dockerhub
+        run: |
+          wget https://github.com/christian-korneck/docker-pushrm/releases/download/v${dockerpushrm_version}/docker-pushrm_linux_amd64
+          mkdir -p $HOME/.docker/cli-plugins/
+          mv docker-pushrm_linux_amd64 $HOME/.docker/cli-plugins/docker-pushrm
+          chmod +x $HOME/.docker/cli-plugins/docker-pushrm
+          docker pushrm danopstech/starlink_exporter --file "./README.md" --short "${{ github.event.repository.description }}"
+
       - name: Slack Finish Report
         uses: act10ns/slack@v1
         if: always()
@@ -69,4 +80,3 @@ jobs:
           channel: '#github-actions'
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_TOKEN }}
-
