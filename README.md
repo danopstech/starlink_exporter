@@ -113,6 +113,10 @@ scrape_configs
 # TYPE starlink_dish_wedge_fraction_obstruction_ratio gauge
 ```
 
-## Sample:
+## Example Grafana Dashboard:
 
-[Screenshot](https://github.com/danopstech/starlink_exporter/raw/main/.docs/assets/sample.jpg) of a sample dashboard created using [Grafana](https://grafana.com/) with metrics exported from `starlink_exporter`.
+https://grafana.com/grafana/dashboards/14337
+
+<p align="center">
+	<img src="https://github.com/danopstech/starlink_exporter/raw/main/.docs/assets/screenshot.jpg" width="95%">
+</p>
