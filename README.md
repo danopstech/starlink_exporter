@@ -11,8 +11,13 @@ A [Starlink](https://www.starlink.com/) exporter for Prometheus. Not affiliated 
 [![Release](https://img.shields.io/github/release/danopstech/starlink_exporter.svg)](https://github.com/danopstech/starlink_exporter/releases/latest)
 [![Docker](https://img.shields.io/docker/pulls/danopstech/starlink_exporter)](https://hub.docker.com/r/danopstech/starlink_exporter)
 ![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/danopstech/starlink_exporter)
+![os/arch](https://img.shields.io/badge/os%2Farch-amd64-yellow)
+![os/arch](https://img.shields.io/badge/os%2Farch-arm64-yellow)
+![os/arch](https://img.shields.io/badge/os%2Farch-armv7-yellow)
 
-## Simple Usage:
+> 📡 **[Starlink Monitoring System](https://github.com/danopstech/starlink) uses this Container.** it is a batteries included Docker Compose file to run exporters, Grafana and Prometheus.
+
+## Usage:
 
 ### Flags
 
