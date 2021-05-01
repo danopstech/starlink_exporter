@@ -4,11 +4,17 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
+    assignees:
+      - "dwillcocks"
   - package-ecosystem: "docker"
     directory: "/"
     schedule:
       interval: "daily"
+    assignees:
+      - "dwillcocks"
   - package-ecosystem: "gomod"
     directory: "/"
     schedule:
       interval: "daily"
+    assignees:
+      - "dwillcocks"
