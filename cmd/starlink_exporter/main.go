@@ -5,11 +5,10 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/danopstech/starlink_exporter/internal/exporter"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/prometheus/common/log"
-
-	"github.com/danopstech/starlink_exporter/internal/exporter"
 )
 
 const (
@@ -26,6 +25,7 @@ func main() {
 		log.Fatalf("could not start exporter: %s", err.Error())
 	}
 	defer exporter.Conn.Close()
+	log.Infof("dish id: %s", exporter.DishID)
 
 	r := prometheus.NewRegistry()
 	r.MustRegister(exporter)

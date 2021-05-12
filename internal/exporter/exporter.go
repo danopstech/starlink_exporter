@@ -14,10 +14,9 @@ import (
 )
 
 const (
-	// Address to reach Starlink dish ip:port
+	// DishAddress to reach Starlink dish ip:port
 	DishAddress = "192.168.100.1:9200"
-
-	namespace = "starlink"
+	namespace   = "starlink"
 )
 
 var (
@@ -31,19 +30,58 @@ var (
 		"Time to scrape metrics from starlink dish",
 		nil, nil,
 	)
+
+	// collectDishContext
 	dishInfo = prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "dish", "info"),
 		"Running software versions and IDs of hardware",
 		[]string{"device_id", "hardware_version", "software_version", "country_code", "utc_offset"}, nil,
 	)
+	dishUptimeSeconds = prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "dish", "uptime_seconds"),
+		"Dish running time",
+		nil, nil,
+	)
+	dishCellId = prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "dish", "cell_id"),
+		"Cell ID dish is located in",
+		nil, nil,
+	)
+	dishPopRackId = prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "dish", "pop_rack_id"),
+		"pop rack id",
+		nil, nil,
+	)
+	dishInitialSatelliteId = prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "dish", "initial_satellite_id"),
+		"initial satellite id",
+		nil, nil,
+	)
+	dishInitialGatewayId = prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "dish", "initial_gateway_id"),
+		"initial gateway id",
+		nil, nil,
+	)
+	dishOnBackupBeam = prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "dish", "backup_beam"),
+		"connected to backup beam",
+		nil, nil,
+	)
+	dishSecondsToSlotEnd = prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "dish", "time_to_slot_end_seconds"),
+		"Seconds left on current slot",
+		nil, nil,
+	)
+
+	// collectDishStatus
 	dishState = prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "dish", "state"),
 		"The current dishState of the Dish (Unknown, Booting, Searching, Connected).",
 		nil, nil,
 	)
-	dishUptimeSeconds = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, "dish", "uptime_seconds"),
-		"Dish running time",
+	dishSecondsToFirstNonemptySlot = prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "dish", "first_nonempty_slot_seconds"),
+		"Seconds to next non empty slot",
 		nil, nil,
 	)
 	dishPopPingDropRatio = prometheus.NewDesc(
@@ -71,6 +109,8 @@ var (
 		"Amount of bandwidth in bytes per second download",
 		nil, nil,
 	)
+
+	// collectDishObstructions
 	dishCurrentlyObstructed = prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "dish", "currently_obstructed"),
 		"Status of view of the sky",
@@ -91,21 +131,18 @@ var (
 		"Unknown",
 		nil, nil,
 	)
-	dishSecondsToFirstNonemptySlot = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, "dish", "first_nonempty_slot_seconds"),
-		"Seconds to next non empty slot",
-		nil, nil,
-	)
 	dishWedgeFractionObstructionRatio = prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "dish", "wedge_fraction_obstruction_ratio"),
 		"Percentage of obstruction per wedge section",
-		[]string{"wedge"}, nil,
+		[]string{"wedge", "wedge_name"}, nil,
 	)
 	dishWedgeAbsFractionObstructionRatio = prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "dish", "wedge_abs_fraction_obstruction_ratio"),
 		"Percentage of Absolute fraction per wedge section",
-		[]string{"wedge"}, nil,
+		[]string{"wedge", "wedge_name"}, nil,
 	)
+
+	// collectDishAlerts
 	dishAlertMotorsStuck = prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "dish", "alert_motors_stuck"),
 		"Status of motor stuck",
@@ -141,22 +178,35 @@ var (
 // Exporter collects Starlink stats from the Dish and exports them using
 // the prometheus metrics package.
 type Exporter struct {
-	Conn   *grpc.ClientConn
-	Client device.DeviceClient
+	Conn        *grpc.ClientConn
+	Client      device.DeviceClient
+	DishID      string
+	CountryCode string
 }
 
 // New returns an initialized Exporter.
 func New(address string) (*Exporter, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
-	defer cancel()
+	ctx, connCancel := context.WithTimeout(context.Background(), time.Second*3)
+	defer connCancel()
 	conn, err := grpc.DialContext(ctx, address, grpc.WithInsecure(), grpc.WithBlock())
 	if err != nil {
 		return nil, fmt.Errorf("error creating underlying gRPC connection to starlink dish: %s", err.Error())
 	}
 
+	ctx, HandleCancel := context.WithTimeout(context.Background(), time.Second*1)
+	defer HandleCancel()
+	resp, err := device.NewDeviceClient(conn).Handle(ctx, &device.Request{
+		Request: &device.Request_GetDeviceInfo{},
+	})
+	if err != nil {
+		return nil, fmt.Errorf("could not get dish id: %s", err.Error())
+	}
+
 	return &Exporter{
-		Conn:   conn,
-		Client: device.NewDeviceClient(conn),
+		Conn:        conn,
+		Client:      device.NewDeviceClient(conn),
+		DishID:      resp.GetGetDeviceInfo().GetDeviceInfo().GetId(),
+		CountryCode: resp.GetGetDeviceInfo().GetDeviceInfo().GetCountryCode(),
 	}, nil
 }
 
@@ -165,21 +215,35 @@ func New(address string) (*Exporter, error) {
 func (e *Exporter) Describe(ch chan<- *prometheus.Desc) {
 	ch <- dishUp
 	ch <- dishScrapeDurationSeconds
+
+	// collectDishContext
 	ch <- dishInfo
-	ch <- dishState
 	ch <- dishUptimeSeconds
+	ch <- dishCellId
+	ch <- dishPopRackId
+	ch <- dishInitialSatelliteId
+	ch <- dishInitialGatewayId
+	ch <- dishOnBackupBeam
+	ch <- dishSecondsToSlotEnd
+
+	// collectDishStatus
+	ch <- dishState
+	ch <- dishSecondsToFirstNonemptySlot
 	ch <- dishPopPingDropRatio
 	ch <- dishPopPingLatencySeconds
 	ch <- dishSnr
 	ch <- dishUplinkThroughputBytes
 	ch <- dishDownlinkThroughputBytes
+
+	// collectDishObstructions
 	ch <- dishCurrentlyObstructed
 	ch <- dishFractionObstructionRatio
 	ch <- dishLast24hObstructedSeconds
 	ch <- dishValidSeconds
-	ch <- dishSecondsToFirstNonemptySlot
 	ch <- dishWedgeFractionObstructionRatio
 	ch <- dishWedgeAbsFractionObstructionRatio
+
+	// collectDishAlerts
 	ch <- dishAlertMotorsStuck
 	ch <- dishAlertThermalThrottle
 	ch <- dishAlertThermalShutdown
@@ -192,7 +256,12 @@ func (e *Exporter) Describe(ch chan<- *prometheus.Desc) {
 // as Prometheus metrics. It implements prometheus.Collector.
 func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 	start := time.Now()
-	ok := e.collectDish(ch)
+
+	ok := e.collectDishContext(ch)
+	ok = ok && e.collectDishStatus(ch)
+	ok = ok && e.collectDishObstructions(ch)
+	ok = ok && e.collectDishAlerts(ch)
+
 	dishDuration := time.Since(start).Seconds()
 
 	if ok {
@@ -209,7 +278,64 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 	}
 }
 
-func (e *Exporter) collectDish(ch chan<- prometheus.Metric) bool {
+func (e *Exporter) collectDishContext(ch chan<- prometheus.Metric) bool {
+	req := &device.Request{
+		Request: &device.Request_DishGetContext{},
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*1)
+	defer cancel()
+	resp, err := e.Client.Handle(ctx, req)
+	if err != nil {
+		log.Errorf("failed to collect context from dish: %s", err.Error())
+		return false
+	}
+
+	dishC := resp.GetDishGetContext()
+	dishI := dishC.GetDeviceInfo()
+	dishS := dishC.GetDeviceState()
+
+	ch <- prometheus.MustNewConstMetric(
+		dishInfo, prometheus.GaugeValue, 1.00,
+		dishI.GetId(),
+		dishI.GetHardwareVersion(),
+		dishI.GetSoftwareVersion(),
+		dishI.GetCountryCode(),
+		fmt.Sprint(dishI.GetUtcOffsetS()),
+	)
+
+	ch <- prometheus.MustNewConstMetric(
+		dishUptimeSeconds, prometheus.GaugeValue, float64(dishS.GetUptimeS()),
+	)
+
+	ch <- prometheus.MustNewConstMetric(
+		dishCellId, prometheus.GaugeValue, float64(dishC.GetCellId()),
+	)
+
+	ch <- prometheus.MustNewConstMetric(
+		dishPopRackId, prometheus.GaugeValue, float64(dishC.GetPopRackId()),
+	)
+
+	ch <- prometheus.MustNewConstMetric(
+		dishInitialSatelliteId, prometheus.GaugeValue, float64(dishC.GetInitialSatelliteId()),
+	)
+
+	ch <- prometheus.MustNewConstMetric(
+		dishInitialGatewayId, prometheus.GaugeValue, float64(dishC.GetInitialGatewayId()),
+	)
+
+	ch <- prometheus.MustNewConstMetric(
+		dishOnBackupBeam, prometheus.GaugeValue, flool(dishC.GetOnBackupBeam()),
+	)
+
+	ch <- prometheus.MustNewConstMetric(
+		dishSecondsToSlotEnd, prometheus.GaugeValue, float64(dishC.GetSecondsToSlotEnd()),
+	)
+
+	return true
+}
+
+func (e *Exporter) collectDishStatus(ch chan<- prometheus.Metric) bool {
 	req := &device.Request{
 		Request: &device.Request_GetStatus{},
 	}
@@ -218,30 +344,14 @@ func (e *Exporter) collectDish(ch chan<- prometheus.Metric) bool {
 	defer cancel()
 	resp, err := e.Client.Handle(ctx, req)
 	if err != nil {
-		log.Errorf("failed to collect metrics from dish: %s", err.Error())
+		log.Errorf("failed to collect status from dish: %s", err.Error())
 		return false
 	}
 
 	dishStatus := resp.GetDishGetStatus()
-	deviceInfo := dishStatus.GetDeviceInfo()
-	obstructions := dishStatus.GetObstructionStats()
-	alerts := dishStatus.GetAlerts()
-
-	ch <- prometheus.MustNewConstMetric(
-		dishInfo, prometheus.GaugeValue, 1.00,
-		deviceInfo.GetId(),
-		deviceInfo.GetHardwareVersion(),
-		deviceInfo.GetSoftwareVersion(),
-		deviceInfo.GetCountryCode(),
-		fmt.Sprint(deviceInfo.GetUtcOffsetS()),
-	)
 
 	ch <- prometheus.MustNewConstMetric(
 		dishState, prometheus.GaugeValue, float64(dishStatus.GetState().Number()),
-	)
-
-	ch <- prometheus.MustNewConstMetric(
-		dishUptimeSeconds, prometheus.GaugeValue, float64(dishStatus.GetDeviceState().GetUptimeS()),
 	)
 
 	ch <- prometheus.MustNewConstMetric(
@@ -268,6 +378,24 @@ func (e *Exporter) collectDish(ch chan<- prometheus.Metric) bool {
 		dishDownlinkThroughputBytes, prometheus.GaugeValue, float64(dishStatus.GetDownlinkThroughputBps()),
 	)
 
+	return true
+}
+
+func (e *Exporter) collectDishObstructions(ch chan<- prometheus.Metric) bool {
+	req := &device.Request{
+		Request: &device.Request_GetStatus{},
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*1)
+	defer cancel()
+	resp, err := e.Client.Handle(ctx, req)
+	if err != nil {
+		log.Errorf("failed to collect obstructions from dish: %s", err.Error())
+		return false
+	}
+
+	obstructions := resp.GetDishGetStatus().GetObstructionStats()
+
 	ch <- prometheus.MustNewConstMetric(
 		dishCurrentlyObstructed, prometheus.GaugeValue, flool(obstructions.GetCurrentlyObstructed()),
 	)
@@ -288,6 +416,7 @@ func (e *Exporter) collectDish(ch chan<- prometheus.Metric) bool {
 		ch <- prometheus.MustNewConstMetric(
 			dishWedgeFractionObstructionRatio, prometheus.GaugeValue, float64(v),
 			strconv.Itoa(i),
+			fmt.Sprintf("%d_to_%d", i*30, (i+1)*30),
 		)
 	}
 
@@ -295,8 +424,27 @@ func (e *Exporter) collectDish(ch chan<- prometheus.Metric) bool {
 		ch <- prometheus.MustNewConstMetric(
 			dishWedgeAbsFractionObstructionRatio, prometheus.GaugeValue, float64(v),
 			strconv.Itoa(i),
+			fmt.Sprintf("%d_to_%d", i*30, (i+1)*30),
 		)
 	}
+
+	return true
+}
+
+func (e *Exporter) collectDishAlerts(ch chan<- prometheus.Metric) bool {
+	req := &device.Request{
+		Request: &device.Request_GetStatus{},
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*1)
+	defer cancel()
+	resp, err := e.Client.Handle(ctx, req)
+	if err != nil {
+		log.Errorf("failed to collect alerts from dish: %s", err.Error())
+		return false
+	}
+
+	alerts := resp.GetDishGetStatus().GetAlerts()
 
 	ch <- prometheus.MustNewConstMetric(
 		dishAlertMotorsStuck, prometheus.GaugeValue, flool(alerts.GetMotorsStuck()),
