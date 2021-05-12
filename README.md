@@ -15,8 +15,6 @@ A [Starlink](https://www.starlink.com/) exporter for Prometheus. Not affiliated 
 ![os/arch](https://img.shields.io/badge/os%2Farch-arm64-yellow)
 ![os/arch](https://img.shields.io/badge/os%2Farch-armv7-yellow)
 
-> 📡 **[Starlink Monitoring System](https://github.com/danopstech/starlink) uses this Container.** it is a batteries included Docker Compose file to run exporters, Grafana and Prometheus.
-
 ## Usage:
 
 ### Flags
@@ -62,6 +60,8 @@ Configure [Prometheus](https://prometheus.io/) to scrape metrics from localhost:
 ...
 scrape_configs
     - job_name: starlink
+      scrape_interval: 3s
+      scrape_timeout:  3s
       static_configs:
         - targets: ['localhost:9817']
 ...
@@ -82,29 +82,41 @@ scrape_configs
 # TYPE starlink_dish_alert_thermal_throttle gauge
 # HELP starlink_dish_alert_unexpected_location Status of location
 # TYPE starlink_dish_alert_unexpected_location gauge
+# HELP starlink_dish_backup_beam connected to backup beam
+# TYPE starlink_dish_backup_beam gauge
+# HELP starlink_dish_cell_id Cell ID dish is located in
+# TYPE starlink_dish_cell_id gauge
 # HELP starlink_dish_currently_obstructed Status of view of the sky
 # TYPE starlink_dish_currently_obstructed gauge
-# HELP starlink_dish_info Running software versions and IDs of hardware
-# TYPE starlink_dish_info gauge
-# HELP starlink_dish_state The Current dishState of the Dish (Unknown, Booting, Searching, Connected).
-# TYPE starlink_dish_state gauge
 # HELP starlink_dish_downlink_throughput_bytes Amount of bandwidth in bytes per second download
 # TYPE starlink_dish_downlink_throughput_bytes gauge
 # HELP starlink_dish_first_nonempty_slot_seconds Seconds to next non empty slot
 # TYPE starlink_dish_first_nonempty_slot_seconds gauge
 # HELP starlink_dish_fraction_obstruction_ratio Percentage of obstruction
 # TYPE starlink_dish_fraction_obstruction_ratio gauge
+# HELP starlink_dish_info Running software versions and IDs of hardware
+# TYPE starlink_dish_info gauge
+# HELP starlink_dish_initial_gateway_id initial gateway id
+# TYPE starlink_dish_initial_gateway_id gauge
+# HELP starlink_dish_initial_satellite_id initial satellite id
+# TYPE starlink_dish_initial_satellite_id gauge
 # HELP starlink_dish_last_24h_obstructed_seconds Number of seconds view of sky has been obstructed in the last 24hours
 # TYPE starlink_dish_last_24h_obstructed_seconds gauge
 # HELP starlink_dish_pop_ping_drop_ratio Percent of pings dropped
 # TYPE starlink_dish_pop_ping_drop_ratio gauge
 # HELP starlink_dish_pop_ping_latency_seconds Latency of connection in seconds
 # TYPE starlink_dish_pop_ping_latency_seconds gauge
+# HELP starlink_dish_pop_rack_id pop rack id
+# TYPE starlink_dish_pop_rack_id gauge
 # HELP starlink_dish_scrape_duration_seconds Time to scrape metrics from starlink dish
 # TYPE starlink_dish_scrape_duration_seconds gauge
 # HELP starlink_dish_snr Signal strength of the connection
 # TYPE starlink_dish_snr gauge
-# HELP starlink_dish_up Was the last query of Starlink successful.
+# HELP starlink_dish_state The current dishState of the Dish (Unknown, Booting, Searching, Connected).
+# TYPE starlink_dish_state gauge
+# HELP starlink_dish_time_to_slot_end_seconds Seconds left on current slot
+# TYPE starlink_dish_time_to_slot_end_seconds gauge
+# HELP starlink_dish_up Was the last query of Starlink dish successful.
 # TYPE starlink_dish_up gauge
 # HELP starlink_dish_uplink_throughput_bytes Amount of bandwidth in bytes per second upload
 # TYPE starlink_dish_uplink_throughput_bytes gauge
