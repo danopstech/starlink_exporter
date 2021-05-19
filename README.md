@@ -7,13 +7,16 @@
 A [Starlink](https://www.starlink.com/) exporter for Prometheus. Not affiliated with or acting on behalf of Starlink(™)
 
 [![goreleaser](https://github.com/danopstech/starlink_exporter/actions/workflows/release.yaml/badge.svg)](https://github.com/danopstech/starlink_exporter/actions/workflows/release.yaml)
+[![build](https://github.com/danopstech/starlink_exporter/actions/workflows/build.yaml/badge.svg)](https://github.com/danopstech/starlink_exporter/actions/workflows/build.yaml)
 [![License](https://img.shields.io/github/license/danopstech/starlink_exporter)](/LICENSE)
 [![Release](https://img.shields.io/github/release/danopstech/starlink_exporter.svg)](https://github.com/danopstech/starlink_exporter/releases/latest)
-[![Docker](https://img.shields.io/docker/pulls/danopstech/starlink_exporter)](https://hub.docker.com/r/danopstech/starlink_exporter)
 ![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/danopstech/starlink_exporter)
 ![os/arch](https://img.shields.io/badge/os%2Farch-amd64-yellow)
 ![os/arch](https://img.shields.io/badge/os%2Farch-arm64-yellow)
 ![os/arch](https://img.shields.io/badge/os%2Farch-armv7-yellow)
+[![Go Report Card](https://goreportcard.com/badge/github.com/danopstech/starlink_exporter)](https://goreportcard.com/report/github.com/danopstech/starlink_exporter)
+
+If you would like a pre-packaged system to monitor you Starlink system please check out https://github.com/danopstech/starlink. It includes this exporter, speedtest_exporter, blackbox_exporter, Grafana and Prometheus in one Docker Compose file.
 
 ## Usage:
 

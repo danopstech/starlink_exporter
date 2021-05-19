@@ -1,0 +1,48 @@
+name: build
+
+on:
+  push:
+    tags-ignore:
+      - v*
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Slack Start Report
+        uses: act10ns/slack@v1.2.2
+        if: always()
+        with:
+          status: starting
+          channel: '#github-actions'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_TOKEN }}
+
+      - name: Checkout
+        uses: actions/checkout@v2.3.4
+
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.16
+
+      - name: Lint
+        uses: golangci/golangci-lint-action@v2.5.2
+        with:
+          skip-go-installation: true
+
+      - name: Build
+        uses: goreleaser/goreleaser-action@v2.5.0
+        with:
+          version: latest
+          args: release --snapshot --rm-dist
+
+      - name: Slack Finish Report
+        uses: act10ns/slack@v1.2.2
+        if: always()
+        with:
+          status: ${{ job.status }}
+          steps: ${{ toJson(steps) }}
+          channel: '#github-actions'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_TOKEN }}
