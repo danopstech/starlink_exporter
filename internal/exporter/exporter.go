@@ -199,7 +199,7 @@ func New(address string) (*Exporter, error) {
 		Request: &device.Request_GetDeviceInfo{},
 	})
 	if err != nil {
-		return nil, fmt.Errorf("could not get dish id: %s", err.Error())
+		return nil, fmt.Errorf("could not collect inital information from dish: %s", err.Error())
 	}
 
 	return &Exporter{
