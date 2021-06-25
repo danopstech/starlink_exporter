@@ -9,6 +9,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/common/log"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/status"
 
 	"github.com/danopstech/starlink_exporter/pkg/spacex.com/api/device"
 )
@@ -287,8 +288,13 @@ func (e *Exporter) collectDishContext(ch chan<- prometheus.Metric) bool {
 	defer cancel()
 	resp, err := e.Client.Handle(ctx, req)
 	if err != nil {
-		log.Errorf("failed to collect context from dish: %s", err.Error())
-		return false
+		st, ok := status.FromError(err)
+		if ok && st.Code() == 7 {
+			log.Info("Got PermissionDenied for Endpoint ... continuing")
+		} else {
+			log.Errorf("failed to collect context from dish: %s", err.Error())
+			return false
+		}
 	}
 
 	dishC := resp.GetDishGetContext()
