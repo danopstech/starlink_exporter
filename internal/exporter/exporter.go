@@ -289,9 +289,7 @@ func (e *Exporter) collectDishContext(ch chan<- prometheus.Metric) bool {
 	resp, err := e.Client.Handle(ctx, req)
 	if err != nil {
 		st, ok := status.FromError(err)
-		if ok && st.Code() == 7 {
-			log.Info("Got PermissionDenied for Endpoint ... continuing")
-		} else {
+		if ok && st.Code() != 7 {
 			log.Errorf("failed to collect context from dish: %s", err.Error())
 			return false
 		}
