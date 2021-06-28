@@ -8,5 +8,5 @@ require (
 	github.com/prometheus/client_golang v1.10.0
 	github.com/prometheus/common v0.25.0
 	google.golang.org/grpc v1.38.0
-	google.golang.org/protobuf v1.26.0
+	google.golang.org/protobuf v1.27.0
 )
