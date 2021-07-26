@@ -111,6 +111,18 @@ var (
 		nil, nil,
 	)
 
+	dishBoreSightAzimuthDeg = prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "dish", "bore_sight_azimuth_deg"),
+		"azimuth in degrees",
+		nil, nil,
+	)
+
+	dishBoreSightElevationDeg = prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "dish", "bore_sight_elevation_deg"),
+		"elevation in degrees",
+		nil, nil,
+	)
+
 	// collectDishObstructions
 	dishCurrentlyObstructed = prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "dish", "currently_obstructed"),
@@ -245,6 +257,8 @@ func (e *Exporter) Describe(ch chan<- *prometheus.Desc) {
 	ch <- dishSnr
 	ch <- dishUplinkThroughputBytes
 	ch <- dishDownlinkThroughputBytes
+	ch <- dishBoreSightAzimuthDeg
+	ch <- dishBoreSightElevationDeg
 
 	// collectDishObstructions
 	ch <- dishCurrentlyObstructed
@@ -390,6 +404,14 @@ func (e *Exporter) collectDishStatus(ch chan<- prometheus.Metric) bool {
 
 	ch <- prometheus.MustNewConstMetric(
 		dishDownlinkThroughputBytes, prometheus.GaugeValue, float64(dishStatus.GetDownlinkThroughputBps()),
+	)
+
+	ch <- prometheus.MustNewConstMetric(
+		dishBoreSightAzimuthDeg, prometheus.GaugeValue, float64(dishStatus.GetBoresightAzimuthDeg()),
+	)
+
+	ch <- prometheus.MustNewConstMetric(
+		dishBoreSightElevationDeg, prometheus.GaugeValue, float64(dishStatus.GetBoresightElevationDeg()),
 	)
 
 	return true
