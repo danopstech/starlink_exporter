@@ -132,6 +132,16 @@ var (
 		"Unknown",
 		nil, nil,
 	)
+	dishProlongedObstructionDurationSeconds = prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "dish", "prolonged_obstruction_duration_seconds"),
+		"Average in seconds of prolonged obstructions",
+		nil, nil,
+	)
+	dishProlongedObstructionIntervalSeconds = prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "dish", "prolonged_obstruction_interval_seconds"),
+		"Average prolonged obstruction interval in seconds",
+		nil, nil,
+	)
 	dishWedgeFractionObstructionRatio = prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "dish", "wedge_fraction_obstruction_ratio"),
 		"Percentage of obstruction per wedge section",
@@ -241,6 +251,8 @@ func (e *Exporter) Describe(ch chan<- *prometheus.Desc) {
 	ch <- dishFractionObstructionRatio
 	ch <- dishLast24hObstructedSeconds
 	ch <- dishValidSeconds
+	ch <- dishProlongedObstructionDurationSeconds
+	ch <- dishProlongedObstructionIntervalSeconds
 	ch <- dishWedgeFractionObstructionRatio
 	ch <- dishWedgeAbsFractionObstructionRatio
 
@@ -263,14 +275,12 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 	ok = ok && e.collectDishObstructions(ch)
 	ok = ok && e.collectDishAlerts(ch)
 
-	dishDuration := time.Since(start).Seconds()
-
 	if ok {
 		ch <- prometheus.MustNewConstMetric(
 			dishUp, prometheus.GaugeValue, 1.0,
 		)
 		ch <- prometheus.MustNewConstMetric(
-			dishScrapeDurationSeconds, prometheus.GaugeValue, dishDuration,
+			dishScrapeDurationSeconds, prometheus.GaugeValue, time.Since(start).Seconds(),
 		)
 	} else {
 		ch <- prometheus.MustNewConstMetric(
@@ -290,7 +300,7 @@ func (e *Exporter) collectDishContext(ch chan<- prometheus.Metric) bool {
 	if err != nil {
 		st, ok := status.FromError(err)
 		if ok && st.Code() != 7 {
-			log.Errorf("failed to collect context from dish: %s", err.Error())
+			log.Errorf("failed to collect dish context: %s", err.Error())
 			return false
 		}
 	}
@@ -414,6 +424,14 @@ func (e *Exporter) collectDishObstructions(ch chan<- prometheus.Metric) bool {
 
 	ch <- prometheus.MustNewConstMetric(
 		dishValidSeconds, prometheus.GaugeValue, float64(obstructions.GetValidS()),
+	)
+
+	ch <- prometheus.MustNewConstMetric(
+		dishProlongedObstructionDurationSeconds, prometheus.GaugeValue, float64(obstructions.GetAvgProlongedObstructionDurationS()),
+	)
+
+	ch <- prometheus.MustNewConstMetric(
+		dishProlongedObstructionIntervalSeconds, prometheus.GaugeValue, float64(obstructions.GetAvgProlongedObstructionIntervalS()),
 	)
 
 	for i, v := range obstructions.GetWedgeFractionObstructed() {
