@@ -87,6 +87,10 @@ scrape_configs
 # TYPE starlink_dish_alert_unexpected_location gauge
 # HELP starlink_dish_backup_beam connected to backup beam
 # TYPE starlink_dish_backup_beam gauge
+# HELP starlink_dish_bore_sight_azimuth_deg azimuth in degrees
+# TYPE starlink_dish_bore_sight_azimuth_deg gauge
+# HELP starlink_dish_bore_sight_elevation_deg elevation in degrees
+# TYPE starlink_dish_bore_sight_elevation_deg gauge
 # HELP starlink_dish_cell_id Cell ID dish is located in
 # TYPE starlink_dish_cell_id gauge
 # HELP starlink_dish_currently_obstructed Status of view of the sky
@@ -111,6 +115,10 @@ scrape_configs
 # TYPE starlink_dish_pop_ping_latency_seconds gauge
 # HELP starlink_dish_pop_rack_id pop rack id
 # TYPE starlink_dish_pop_rack_id gauge
+# HELP starlink_dish_prolonged_obstruction_duration_seconds Average in seconds of prolonged obstructions
+# TYPE starlink_dish_prolonged_obstruction_duration_seconds gauge
+# HELP starlink_dish_prolonged_obstruction_interval_seconds Average prolonged obstruction interval in seconds
+# TYPE starlink_dish_prolonged_obstruction_interval_seconds gauge
 # HELP starlink_dish_scrape_duration_seconds Time to scrape metrics from starlink dish
 # TYPE starlink_dish_scrape_duration_seconds gauge
 # HELP starlink_dish_snr Signal strength of the connection
