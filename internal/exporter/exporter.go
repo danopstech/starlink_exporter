@@ -320,16 +320,6 @@ func (e *Exporter) collectDishContext(ch chan<- prometheus.Metric) bool {
 	}
 
 	dishC := resp.GetDishGetContext()
-	dishI := dishC.GetDeviceInfo()
-
-	ch <- prometheus.MustNewConstMetric(
-		dishInfo, prometheus.GaugeValue, 1.00,
-		dishI.GetId(),
-		dishI.GetHardwareVersion(),
-		dishI.GetSoftwareVersion(),
-		dishI.GetCountryCode(),
-		fmt.Sprint(dishI.GetUtcOffsetS()),
-	)
 
 	ch <- prometheus.MustNewConstMetric(
 		dishCellId, prometheus.GaugeValue, float64(dishC.GetCellId()),
@@ -372,7 +362,17 @@ func (e *Exporter) collectDishStatus(ch chan<- prometheus.Metric) bool {
 	}
 
 	dishStatus := resp.GetDishGetStatus()
+	dishI := dishStatus.GetDeviceInfo()
 	dishS := dishStatus.GetDeviceState()
+
+	ch <- prometheus.MustNewConstMetric(
+		dishInfo, prometheus.GaugeValue, 1.00,
+		dishI.GetId(),
+		dishI.GetHardwareVersion(),
+		dishI.GetSoftwareVersion(),
+		dishI.GetCountryCode(),
+		fmt.Sprint(dishI.GetUtcOffsetS()),
+	)
 
 	ch <- prometheus.MustNewConstMetric(
 		dishUptimeSeconds, prometheus.GaugeValue, float64(dishS.GetUptimeS()),
