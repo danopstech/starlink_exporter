@@ -29,14 +29,14 @@ jobs:
 
       - name: Login DockerHub
         id: dockerLogin
-        uses: docker/login-action@v1.10.0
+        uses: docker/login-action@v2.1.0
         with:
           username: ${{ secrets.DOCKERHUB_BOT_USERNAME }}
           password: ${{ secrets.DOCKERHUB_BOT_TOKEN }}
 
       - name: Login Github Container Registry
         id: githubContainerRegistryLogin
-        uses: docker/login-action@v1.10.0
+        uses: docker/login-action@v2.1.0
         with:
           registry: "ghcr.io"
           username: "danopstech"
