@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Slack Start Report
-        uses: act10ns/slack@v1.2.2
+        uses: act10ns/slack@v2.0.0
         if: always()
         with:
           status: starting
@@ -72,7 +72,7 @@ jobs:
           docker pushrm danopstech/starlink_exporter --file "./README.md" --short "${{ github.event.repository.description }}"
 
       - name: Slack Finish Report
-        uses: act10ns/slack@v1.2.2
+        uses: act10ns/slack@v2.0.0
         if: always()
         with:
           status: ${{ job.status }}
