@@ -24,7 +24,7 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_TOKEN }}
 
       - name: Checkout
-        uses: actions/checkout@v2.3.4
+        uses: actions/checkout@v3.3.0
 
       - name: Set up Go
         uses: actions/setup-go@v2
